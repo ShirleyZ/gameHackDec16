@@ -1,14 +1,16 @@
-= todo
-[x] Make bg infinite scroll
-[x] put in loot crate node generation
-		[x] Just display one per inteval
-		[x] randomise which loot node it is
-[x] spacebar to loot items
-[ ] timer to get loot
-[ ] indication that you're looting
-[ ] get items from looting
+= MVP
+[ ] Game will end
+[ ] Game shows looting indication
 
-[ ] Substitute boxes for art
+= todo
+[ ] indication that you're looting
+		[ ] is the player sprite enough?
+[ ] get items from looting
+		[ ] get score for looting
+[ ] let there be a game over
+		[ ] let there be a bad guy
+		[ ] compare time of big bad to time of player
+		[ ] if it's getting close then have black fade catching up
 
 = polish
 [ ] moving character off to left a little when they stop
@@ -18,3 +20,14 @@
 	if player hits go
 	++player x until it hits right bound
 [ ] Music/sounds
+[ ] That weird sliding bug when you 'stop'
+
+= done
+[x] Make bg infinite scroll
+[x] put in loot crate node generation
+		[x] Just display one per inteval
+		[x] randomise which loot node it is
+[x] spacebar to loot items
+[x] Substitute boxes for art
+[x] timer to get loot
+		[x] Looting is broken ;0;

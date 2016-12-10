@@ -1,0 +1,2 @@
+= notes
+- thinner objects are harder to loot? esp if still sliding
