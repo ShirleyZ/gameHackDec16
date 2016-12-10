@@ -7,16 +7,19 @@ var ctx = canvas.getContext("2d");
 var ONE_FRAME_TIME = 1000 / 60 ;
 var PLAYER_RIGHT_BOUNDARY = width/2 + 100;
 var PLAYER_LEFT_BOUNDARY = width/2;
-var BACKBG_OFFSET = height-200;
+var BACKBG_OFFSET = 80;
 var MIDBG_OFFSET = 250;
 var FORBG_OFFSET = 150;
+var PLAYER_OFFSET = 150;
 
 
 var player = {width: 50};
 // Background (back/mid/front)
-var bgb = {width: 600}
+var bgb = {width: 2173}
 var bgm = {width: 600}
-var bgf = {width: 600}
+var bgf = {width: 1526}
+var bgbImg;
+var bgfImg;
 
 var keymovepower = 0.4;
 
@@ -28,10 +31,6 @@ window.onkeydown = function(e) {keys[e.keyCode]=true;}
 var timeScore = 0;
 
 init();
-
-console.log(Loot);
-
-
 
 var mainloop = function() {
 	updateGame();
@@ -46,9 +45,14 @@ function init() {
 	canvas.imageSmoothingEnabled = true;
 
 	player.x = width/2; // Init player
-	player.y = FORBG_OFFSET;
+	player.y = PLAYER_OFFSET;
 	player.xspeed = 15;
 	player.yspeed = 0;
+
+	bgbImg = new Image();
+	bgbImg.src = 'img/bgb.png';
+	bgfImg = new Image();
+	bgfImg.src = 'img/bgf.png';
 
 	// Setting bg height stagger for parallax effect
 	bgb.y = BACKBG_OFFSET; bgm.y = MIDBG_OFFSET; bgf.y = FORBG_OFFSET;
@@ -61,24 +65,17 @@ function init() {
 
 function drawBackground() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = "#000";
-	ctx.fillRect(bgb.x1,bgb.y,bgb.width,200);
-	ctx.fillStyle = "#010101";
-	ctx.fillRect(bgb.x2,bgb.y,bgb.width,200);
-	ctx.fillStyle = "#272727";
-	ctx.fillRect(bgb.x3,bgb.y,bgb.width,200);
+
+	ctx.drawImage(bgbImg,bgb.x1,bgb.y);
+	ctx.drawImage(bgbImg,bgb.x2,bgb.y);
+	ctx.drawImage(bgbImg,bgb.x3,bgb.y);
 	
-	ctx.fillStyle = "#b6b6b6";
-	ctx.fillRect(bgm.x1,bgm.y,bgm.width,200);
-	ctx.fillRect(bgm.x2,bgm.y,bgm.width,200);
-	ctx.fillRect(bgm.x3,bgm.y,bgm.width,200);
+	ctx.drawImage(bgfImg,bgf.x1,bgf.y);
+	ctx.drawImage(bgfImg,bgf.x2,bgf.y);
+	ctx.drawImage(bgfImg,bgf.x3,bgf.y);
 	
-	ctx.fillStyle = "#808080";
-	ctx.fillRect(bgf.x1,bgf.y,bgm.width,200);
-	ctx.fillStyle = "#868686";
-	ctx.fillRect(bgf.x2,bgf.y,bgm.width,200);
-	ctx.fillStyle = "#888888";
-	ctx.fillRect(bgf.x3,bgf.y,bgm.width,200);
+	ctx.fillStyle = "black";
+	ctx.fillRect(0,0, width, 150);
 }
 
 function drawGame(){
@@ -87,13 +84,13 @@ function drawGame(){
 	ctx.scale(1, -1);
 
 	drawBackground();
-	
+
 	ctx.fillStyle = "green";
 	for (var i = 0; i < lootNodes.length; i++) {
 		ctx.fillRect(lootNodes[i].x,lootNodes[i].y, lootNodes[i].nodeInfo.width, lootNodes[i].nodeInfo.height);
 	}
 
-	ctx.fillStyle = "black";
+	ctx.fillStyle = "grey";
 	ctx.fillRect(player.x,player.y,player.width,100);
 	ctx.stroke();
 
@@ -177,7 +174,7 @@ function updateLootNodes() {
 			console.log("Incoming fridge!");
 		}
 	
-		lootNodes.push({x: width, y: FORBG_OFFSET, nodeInfo: lootType});
+		lootNodes.push({x: width, y: PLAYER_OFFSET, nodeInfo: lootType});
 	}
 
 	// Loot movement
