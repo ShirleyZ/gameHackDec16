@@ -1,16 +1,10 @@
 = todo
-[x] indication that you're looting
-	[x] Show animation of item	
+[ ] Show on-screen how much you restore
+[x] Make hunger bar clearer
+[x] Make loot indication before darkness
+[x] Move UI before darkness
 
-[ ] Check email for sprites
-[x] let there be a game over
-		[x] let there be a bad guy
-		[x] compare time of big bad to time of player
-		[x] if it's getting close then have black fade catching up
-[x] Add hunger mechanic
-[ ] Add images
-[ ] Add instruction screen
-[ ] Add restart button 
+
 = polish
 [ ] moving character off to left a little when they stop
 	if player hits stop
@@ -19,7 +13,10 @@
 	if player hits go
 	++player x until it hits right bound
 [ ] Music/sounds
-[ ] That weird sliding bug when you 'stop'
+
+= feedback
+[ ] Add jumping/other obstacles/swamps
+[ ] Add speed bossts/hunger downgrades
 
 = done
 [x] Make bg infinite scroll
@@ -32,3 +29,15 @@
 		[x] Looting is broken ;0;
 [x] get items from looting
 		[x] get score for looting
+[x] That weird sliding bug when you 'stop'
+[x] indication that you're looting
+	[x] Show animation of item	
+[x] Check email for sprites
+[x] let there be a game over
+		[x] let there be a bad guy
+		[x] compare time of big bad to time of player
+		[x] if it's getting close then have black fade catching up
+[x] Add hunger mechanic
+[x] Add images
+[x] Add instruction screen
+[x] Add restart button 

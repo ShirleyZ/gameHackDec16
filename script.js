@@ -3,6 +3,7 @@ var ctx = canvas.getContext("2d");
 var game;
 var player = {width: 50,looting:0};
 var enviro = {lootAnimation:0};
+var lootTracker;
 // Background (back/mid/front)
 var bgb = {width: 2100};
 var bgm = {width: 600};
@@ -13,15 +14,17 @@ var bgfImg;
 var keymovepower = 0.4;
 
 var lootNodes = [];
+var lootImgs;
 var keys = [];
 window.onkeyup = function(e) {keys[e.keyCode]=false;}
 window.onkeydown = function(e) {keys[e.keyCode]=true;}
 
 var timeScore = 0;
-var time = 0;
-var score = 0;
-var theEnd = new TheEnd();
+// var game.time = 0;
+// var game.score = 0;
+var theEnd;
 
+setup();
 init();
 
 var mainloop = function() {
@@ -31,30 +34,18 @@ var mainloop = function() {
 
 setInterval( mainloop, ONE_FRAME_TIME );
 
-function init() {
-	game = new Game();
-
-	canvas.width  = width
-	canvas.height = height;
-	canvas.imageSmoothingEnabled = true;
-	
-	player.x = width/2; // Init player
-	player.y = PLAYER_OFFSET;
-	player.xspeed = 15;
-	player.yspeed = 0;
-	player.hunger = 0;
-	player.feed = function(nutrition) {
-		player.hunger-=nutrition;
-		if (player.hunger < 0) {
-			player.hunger = 0;
-		}
-
-	}
-
+function setup() {
+	// Images
 	bgbImg = new Image();
 	bgbImg.src = 'img/bgb.png';
 	bgfImg = new Image();
 	bgfImg.src = 'img/bgf.png';
+
+	lootImgs = {};
+	for (var key in Loot) {
+		lootImgs[key] = new Image();
+		lootImgs[key].src = Loot[key].srcImg;
+	}
 
 	// Setting bg height stagger for parallax effect
 	bgb.y = BGB_OFFSET; bgm.y = BGM_OFFSET; bgf.y = BGF_OFFSET;
@@ -65,6 +56,38 @@ function init() {
 	bgb.x2 = bgb.width; bgm.x2 = bgm.width; bgf.x2 = bgf.width;
 	bgb.x3 = 2*bgb.width; bgm.x3 = 2*bgm.width; bgf.x3 = 2*bgf.width;
 
+}
+
+function init() {
+	game = new Game();
+	game.init();
+	theEnd = new TheEnd();
+	theEnd.init();
+	lootTracker = new LootTracker();
+	lootTracker.init();
+	lootNodes = [];
+
+	canvas.width  = width
+	canvas.height = height;
+	canvas.imageSmoothingEnabled = true;
+	
+	player.x = width/3; // Init player
+	player.y = PLAYER_OFFSET;
+	player.xspeed = 15;
+	player.yspeed = 0;
+	player.hunger = 0;
+	player.feed = function(nutrition) {
+		player.hunger-=nutrition;
+		if (player.hunger < 0) {
+			player.hunger = 0;
+		}
+	}
+	player.init = function() {
+		this.hunger = 0;
+		this.xspeed = 15;
+	}
+
+	
 	
 }
 
@@ -104,21 +127,33 @@ function drawGame(){
 	
 		ctx.fillStyle = "green";
 		for (var i = 0; i < lootNodes.length; i++) {
-			ctx.fillRect(lootNodes[i].x,lootNodes[i].y, lootNodes[i].nodeInfo.width, lootNodes[i].nodeInfo.height);
+			var nodeInfo = lootNodes[i].nodeInfo;
+			// ctx.fillRect(lootNodes[i].x,lootNodes[i].y, nodeInfo.width, nodeInfo.height);
+			ctx.drawImage(lootNodes[i].srcImg, lootNodes[i].x-nodeInfo.xoffset,lootNodes[i].y-nodeInfo.yoffset);
 		}
 	
 		drawPlayer();
 	
 		ctx.restore();
-		drawUI();
 	
+
+		theEnd.draw();
+		drawUI();
 	
 		if (enviro.lootAnimation != 0) {
 			// If I want more than one thing to pop up, need array to q it
 			ctx.fillStyle = "grey";
-			ctx.fillRect(width/2 + 10, PLAYER_OFFSET + 150 - enviro.lootAnimation, 30,30);
+			ctx.font = "20px sans-serif";
+			ctx.fillText("Item get",player.x + 10, PLAYER_OFFSET + 150 - enviro.lootAnimation);
+			// ctx.fillRect(player.x + 10, PLAYER_OFFSET + 150 - enviro.lootAnimation, 30,30);
 		}
-		theEnd.draw();
+		if (player.looting != 0) {
+			ctx.fillStyle = "grey";
+			ctx.fillRect(player.x + 10, PLAYER_OFFSET + 150, 30,30);
+			ctx.fillStyle = "white";
+			ctx.fillRect(player.x + 10, PLAYER_OFFSET + 150, 30,player.looting/LOOT_TIMER*30);
+		}
+
 	} else if (game.state == GAME_STATE_INSTRUCTIONS) {
 		game.drawIntro();
 	} else if (game.state == GAME_STATE_OVER) {
@@ -143,17 +178,17 @@ function drawPlayer() {
 function drawUI() {
 	ctx.save();
 
-	// Score
+	// score
 	ctx.fillStyle = "white";
 	ctx.font = "20px sans-serif";
-	ctx.fillText(time+score, 10, 20);
+	ctx.fillText(game.time+game.score, 10, 20);
 
 	// Hunger bar
-	ctx.fillText("Hunger", 20, height-30-UI_HUNGER_HEIGHT);
+	ctx.fillText("Energy", width/3, height-30-UI_HUNGER_HEIGHT);
 	ctx.fillStyle = "#b6b6b6";
-	ctx.fillRect(20, height-50, UI_HUNGER_WIDTH, UI_HUNGER_HEIGHT);
+	ctx.fillRect(width/3, height-50, UI_HUNGER_WIDTH, UI_HUNGER_HEIGHT);
 	ctx.fillStyle = "#fff";
-	ctx.fillRect(20, height-50, (player.hunger/MAX_HUNGER)*UI_HUNGER_WIDTH, UI_HUNGER_HEIGHT);
+	ctx.fillRect(width/3, height-50, UI_HUNGER_WIDTH-((player.hunger/MAX_HUNGER)*UI_HUNGER_WIDTH), UI_HUNGER_HEIGHT);
 
 	ctx.restore();
 }
@@ -197,11 +232,16 @@ function moveBackground(obj, property, speed) {
 	}
 }
 
+function resetGame() {
+	player.reset();
+	game.reset();
+}
+
 function updateGame() {
 	if (game.state == GAME_STATE_PLAYING) {
-		// Update score
+		// Update game.score
 		if (player.xspeed > 5) {
-			time+=1;
+			game.time+=1;
 		}
 
 		updatePlayer();
@@ -214,7 +254,12 @@ function updateGame() {
 			game.state = GAME_STATE_PLAYING;
 		}
 	} else if (game.state == GAME_STATE_OVER) {
-		console.log(keys);
+		if (keys[82]) { // Restart w/ R key
+			init();
+			// game.init();
+			// player.init();
+			// game.state = GAME_STATE_INSTRUCTIONS;
+		}
 	}
 	
 }
@@ -230,7 +275,7 @@ function updateLooting() {
 			var maxNum = lootNodes[lootingThis].nodeInfo.treasure.length;
 			// Grant a random loot
 			var item = Math.round(Math.random(new Date()) * (maxNum - 1));
-			score+=lootNodes[lootingThis].nodeInfo.treasure[item].score;
+			game.score+=lootNodes[lootingThis].nodeInfo.treasure[item].score;
 
 			player.feed(lootNodes[lootingThis].nodeInfo.treasure[item].nutrition);
 			enviro.lootAnimation = 1;
@@ -254,18 +299,28 @@ function updateLootNodes() {
 	var lootMin = 0;
 
 	// Loot generation
-	if (time % 200 == 0) {
+	if (game.time % 200 == 0) {
 		var lootRand = Math.random(new Date()) * (lootMax - lootMin) + lootMin;
-		var lootType = {};
-		if (lootRand > 15) {
+		var lootType = undefined;
+
+		if (lootRand > 10 || lootTracker.timeNoLoot >= 3) {
 			lootType = Loot.spider;
 			console.log("Incoming spoider!");
-		} else if (lootRand > 10) {
-			lootType = Loot.fridge;
-			console.log("Incoming fridge!");
-		}
+			lootTracker.timeNoLoot = 0;
+		} else if (lootRand < 3) {
+			lootType = Loot.soldier;
+			console.log("Incoming soldier!");
+			lootTracker.timeNoLoot = 0;
+		} else {
+			lootTracker.timeNoLoot+=1;
+		}	
 	
-		lootNodes.push({x: width, y: PLAYER_OFFSET, nodeInfo: lootType});
+		if (lootType != undefined) {
+			lootNodes.push({x: width, y: PLAYER_OFFSET, nodeInfo: lootType, srcImg: lootImgs[lootType.name]});
+			console.log(lootType);
+			console.log(lootNodes);	
+		}
+		
 	}
 
 	// Loot movement
@@ -304,7 +359,8 @@ function updateBackground() {
 function updatePlayer() {
 	player.hunger+=1;
 
-	if (player.hunger == MAX_HUNGER) {
-		game.state = true;
+	if (player.hunger >= MAX_HUNGER) {
+		game.state = GAME_STATE_OVER;
+		game.lossType = GAME_OVER_HUNGER;
 	}
 }

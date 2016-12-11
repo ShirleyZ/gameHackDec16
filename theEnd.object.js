@@ -2,16 +2,20 @@
 
 // CHEATING FOR NOW UNTIL I FIGURE OUT THIS INITIALISER
 function TheEnd() {
-	this.progress = 0-THEEND_DELAY;
-	this.isNear = 0;
+
+	this.init = function() {
+		this.progress = 0-THEEND_DELAY;
+		this.isNear = 0;
+	}
 
 	this.update = function() {
 		this.progress+=0.65;
-		this.isNear = time - this.progress;
+		this.isNear = game.time - this.progress;
 
 		if (this.isNear <= 0) {
 			game.state = GAME_STATE_OVER;
-			console.log("GAME IS OVER");
+			game.lossType = GAME_OVER_CAUGHT;
+			console.log("GAME IS OVER. YOU GOT CAUGHT");
 		}
 	}
 
