@@ -1,7 +1,3 @@
-= MVP
-[ ] Game will end
-[ ] Game has hunger/driving mechanic
-
 = todo
 [x] indication that you're looting
 	[x] Show animation of item	
@@ -11,7 +7,10 @@
 		[x] let there be a bad guy
 		[x] compare time of big bad to time of player
 		[x] if it's getting close then have black fade catching up
-[ ] Add hunger mechanic
+[x] Add hunger mechanic
+[ ] Add images
+[ ] Add instruction screen
+[ ] Add restart button 
 = polish
 [ ] moving character off to left a little when they stop
 	if player hits stop

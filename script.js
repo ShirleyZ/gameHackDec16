@@ -96,7 +96,7 @@ function drawBackground() {
 // }
 
 function drawGame(){
-	if (!game.over) {
+	if (game.state == GAME_STATE_PLAYING) {
 		ctx.save();
 		ctx.translate(0, canvas.height);
 		ctx.scale(1, -1);
@@ -119,7 +119,9 @@ function drawGame(){
 			ctx.fillRect(width/2 + 10, PLAYER_OFFSET + 150 - enviro.lootAnimation, 30,30);
 		}
 		theEnd.draw();
-	} else {
+	} else if (game.state == GAME_STATE_INSTRUCTIONS) {
+		game.drawIntro();
+	} else if (game.state == GAME_STATE_OVER) {
 		game.drawGameOver();
 
 	}
@@ -196,7 +198,7 @@ function moveBackground(obj, property, speed) {
 }
 
 function updateGame() {
-	if (!game.over) {
+	if (game.state == GAME_STATE_PLAYING) {
 		// Update score
 		if (player.xspeed > 5) {
 			time+=1;
@@ -207,8 +209,12 @@ function updateGame() {
 		updateLootNodes();
 		updateLooting();
 		updateBackground();
-	} else {
-
+	} else if (game.state == GAME_STATE_INSTRUCTIONS) {
+		if (keys[32]) {
+			game.state = GAME_STATE_PLAYING;
+		}
+	} else if (game.state == GAME_STATE_OVER) {
+		console.log(keys);
 	}
 	
 }
@@ -299,6 +305,6 @@ function updatePlayer() {
 	player.hunger+=1;
 
 	if (player.hunger == MAX_HUNGER) {
-		game.over = true;
+		game.state = true;
 	}
 }

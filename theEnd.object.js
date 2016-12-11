@@ -10,7 +10,7 @@ function TheEnd() {
 		this.isNear = time - this.progress;
 
 		if (this.isNear <= 0) {
-			game.over = true;
+			game.state = GAME_STATE_OVER;
 			console.log("GAME IS OVER");
 		}
 	}
