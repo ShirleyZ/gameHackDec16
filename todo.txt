@@ -1,17 +1,17 @@
 = MVP
 [ ] Game will end
-[ ] Game shows looting indication
+[ ] Game has hunger/driving mechanic
 
 = todo
-[ ] indication that you're looting
-		[ ] is the player sprite enough?
-[ ] get items from looting
-		[ ] get score for looting
-[ ] let there be a game over
-		[ ] let there be a bad guy
-		[ ] compare time of big bad to time of player
-		[ ] if it's getting close then have black fade catching up
+[x] indication that you're looting
+	[x] Show animation of item	
 
+[ ] Check email for sprites
+[x] let there be a game over
+		[x] let there be a bad guy
+		[x] compare time of big bad to time of player
+		[x] if it's getting close then have black fade catching up
+[ ] Add hunger mechanic
 = polish
 [ ] moving character off to left a little when they stop
 	if player hits stop
@@ -31,3 +31,5 @@
 [x] Substitute boxes for art
 [x] timer to get loot
 		[x] Looting is broken ;0;
+[x] get items from looting
+		[x] get score for looting

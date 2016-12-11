@@ -1,23 +1,10 @@
-// initialising values
-var width = window.innerWidth;
-var height = 600;
 var ctx = canvas.getContext("2d");
 
-// Constants
-var BGB_OFFSET = 20;
-var BGF_OFFSET = 150;
-var BGM_OFFSET = 250;
-var LOOT_TIMER = 150;
-var ONE_FRAME_TIME = 1000 / 60 ;
-var PLAYER_LEFT_BOUNDARY = width/2;
-var PLAYER_OFFSET = 150;
-var PLAYER_RIGHT_BOUNDARY = width/2 + 100;
-
-
+var game;
 var player = {width: 50,looting:0};
 var enviro = {lootAnimation:0};
 // Background (back/mid/front)
-var bgb = {width: 2173};
+var bgb = {width: 2100};
 var bgm = {width: 600};
 var bgf = {width: 1526};
 var bgbImg;
@@ -33,6 +20,7 @@ window.onkeydown = function(e) {keys[e.keyCode]=true;}
 var timeScore = 0;
 var time = 0;
 var score = 0;
+var theEnd = new TheEnd();
 
 init();
 
@@ -44,6 +32,8 @@ var mainloop = function() {
 setInterval( mainloop, ONE_FRAME_TIME );
 
 function init() {
+	game = new Game();
+
 	canvas.width  = width
 	canvas.height = height;
 	canvas.imageSmoothingEnabled = true;
@@ -52,6 +42,14 @@ function init() {
 	player.y = PLAYER_OFFSET;
 	player.xspeed = 15;
 	player.yspeed = 0;
+	player.hunger = 0;
+	player.feed = function(nutrition) {
+		player.hunger-=nutrition;
+		if (player.hunger < 0) {
+			player.hunger = 0;
+		}
+
+	}
 
 	bgbImg = new Image();
 	bgbImg.src = 'img/bgb.png';
@@ -60,11 +58,14 @@ function init() {
 
 	// Setting bg height stagger for parallax effect
 	bgb.y = BGB_OFFSET; bgm.y = BGM_OFFSET; bgf.y = BGF_OFFSET;
+
 	// Each bg image has 3 instances to enable smooth scrolling
 	// This is initialising offset for each
 	bgb.x1 = 0; bgm.x1 = 0; bgf.x1 = 0;
 	bgb.x2 = bgb.width; bgm.x2 = bgm.width; bgf.x2 = bgf.width;
 	bgb.x3 = 2*bgb.width; bgm.x3 = 2*bgm.width; bgf.x3 = 2*bgf.width;
+
+	
 }
 
 function drawBackground() {
@@ -82,29 +83,51 @@ function drawBackground() {
 	ctx.fillRect(0,0, width, 150);
 }
 
-function sprite(x, y, srcImg){
-	this.x = x;
-	this.y = y;
-	this.srcImg = srcImg;
+// function sprite(x, y, srcImg){
+// 	this.x = x;
+// 	this.y = y;
+// 	this.srcImg = srcImg;
 
-	this.draw = function(ctx){
+// 	this.draw = function(ctx){
+// 		ctx.save();
+
+// 		ctx.restore();
+// 	}
+// }
+
+function drawGame(){
+	if (!game.over) {
 		ctx.save();
-
+		ctx.translate(0, canvas.height);
+		ctx.scale(1, -1);
+		drawBackground();
+	
+		ctx.fillStyle = "green";
+		for (var i = 0; i < lootNodes.length; i++) {
+			ctx.fillRect(lootNodes[i].x,lootNodes[i].y, lootNodes[i].nodeInfo.width, lootNodes[i].nodeInfo.height);
+		}
+	
+		drawPlayer();
+	
 		ctx.restore();
+		drawUI();
+	
+	
+		if (enviro.lootAnimation != 0) {
+			// If I want more than one thing to pop up, need array to q it
+			ctx.fillStyle = "grey";
+			ctx.fillRect(width/2 + 10, PLAYER_OFFSET + 150 - enviro.lootAnimation, 30,30);
+		}
+		theEnd.draw();
+	} else {
+		game.drawGameOver();
+
 	}
 }
 
-function drawGame(){
+function drawPlayer() {
 	ctx.save();
-	ctx.translate(0, canvas.height);
-	ctx.scale(1, -1);
-	drawBackground();
-
-	ctx.fillStyle = "green";
-	for (var i = 0; i < lootNodes.length; i++) {
-		ctx.fillRect(lootNodes[i].x,lootNodes[i].y, lootNodes[i].nodeInfo.width, lootNodes[i].nodeInfo.height);
-	}
-
+	
 	if (player.looting != 0) {
 		ctx.fillStyle = "#b7b7b7";
 	} else {
@@ -112,23 +135,25 @@ function drawGame(){
 	}
 	ctx.fillRect(player.x,player.y,player.width,100);
 
-	// ctx.translate(0, canvas.height);
-	// ctx.scale(1, -1);
 	ctx.restore();
+}
 
+function drawUI() {
+	ctx.save();
+
+	// Score
 	ctx.fillStyle = "white";
 	ctx.font = "20px sans-serif";
 	ctx.fillText(time+score, 10, 20);
 
-	// Cancelling atm because too confusing
-	// if (enviro.lootAnimation != 0) {
-	// 	ctx.fillStyle = "grey";
-	// 	ctx.beginPath();
-	// 	ctx.lineWidth = 0;
-	// 	ctx.arc(width/2 +23, PLAYER_OFFSET + 100, 20, 0, (enviro.lootAnimation/100) * Math.PI);
-	// 	ctx.fill();
-	// }
-	
+	// Hunger bar
+	ctx.fillText("Hunger", 20, height-30-UI_HUNGER_HEIGHT);
+	ctx.fillStyle = "#b6b6b6";
+	ctx.fillRect(20, height-50, UI_HUNGER_WIDTH, UI_HUNGER_HEIGHT);
+	ctx.fillStyle = "#fff";
+	ctx.fillRect(20, height-50, (player.hunger/MAX_HUNGER)*UI_HUNGER_WIDTH, UI_HUNGER_HEIGHT);
+
+	ctx.restore();
 }
 
 function isAtLootNode() {
@@ -171,14 +196,21 @@ function moveBackground(obj, property, speed) {
 }
 
 function updateGame() {
-	// Update score
-	if (player.xspeed > 5) {
-		time+=1;
-	}
+	if (!game.over) {
+		// Update score
+		if (player.xspeed > 5) {
+			time+=1;
+		}
 
-	updateLootNodes();
-	updateLooting();
-	updateBackground();
+		updatePlayer();
+		theEnd.update();
+		updateLootNodes();
+		updateLooting();
+		updateBackground();
+	} else {
+
+	}
+	
 }
 
 
@@ -193,14 +225,21 @@ function updateLooting() {
 			// Grant a random loot
 			var item = Math.round(Math.random(new Date()) * (maxNum - 1));
 			score+=lootNodes[lootingThis].nodeInfo.treasure[item].score;
+
+			player.feed(lootNodes[lootingThis].nodeInfo.treasure[item].nutrition);
+			enviro.lootAnimation = 1;
 		}
-		// enviro.lootAnimation+=1;
-		// if (enviro.lootAnimation/100 == 2) {
-		// 	enviro.lootAnimation = 0;
-		// }
+
+		if (enviro.lootAnimation != 0) {
+			enviro.lootAnimation+=1;
+			if (enviro.lootAnimation == LOOT_ANIMATION_TIMER) {
+				enviro.lootAnimation = 0;
+			}	
+		}
+		
 	} else {
 		player.looting = 0;
-		// enviro.lootAnimation = 0;
+		enviro.lootAnimation = 0;
 	}
 }
 
@@ -254,4 +293,12 @@ function updateBackground() {
 	moveBackground(bgm,"x3", player.xspeed/5);
 	moveBackground(bgf,"x3", player.xspeed/2);
 
+}
+
+function updatePlayer() {
+	player.hunger+=1;
+
+	if (player.hunger == MAX_HUNGER) {
+		game.over = true;
+	}
 }
